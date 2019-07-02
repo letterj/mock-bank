@@ -1,0 +1,20 @@
+{
+    "database_location": "/tmp/fcfcbank/bank.db",
+    "port": 8080,
+    "currencies": [
+        {
+            "currency":  "EUR",
+            "decimal_places":   2,
+            "active_saturday": false,
+            "time_zone": "NYC",
+            "recon_time": "16:00"
+        },
+        {
+            "currency":  "USD",
+            "decimal_places":   2,
+            "active_saturday": false,
+            "time_zone": "NYC",
+            "recon_time": "21:00"
+        }
+    ]
+}
