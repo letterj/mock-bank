@@ -6,9 +6,10 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 BINARY_NAME=fcfcmockbank
 BINARY_UNIX=$(BINARY_NAME)_unix
-DB_LOCATION=/tmp/fcfcbank
+FC2BANK=bank.db
 
-all: test 
+
+all: clean build
 
 build: 
 	$(GOBUILD) -o $(BINARY_NAME) -v
@@ -21,11 +22,11 @@ clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 	rm -f $(BINARY_UNIX)
-	rm -rf $(DB_LOCATION)
+	rm -f $(FC2BAND)
 
 run:
 	$(GOBUILD) -o $(BINARY_NAME) -v ./...
-	./$(BINARY_NAME)
+	./$(BINARY_NAME) default
 
 deps:
 	$(GOGET) github.com/mattn/go-sqlite3

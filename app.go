@@ -152,9 +152,10 @@ func CreateDB(location string) (*sql.DB, string, error) {
 	transactionTable := `
 	CREATE TABLE IF NOT EXISTS transactions(
    		id               INTEGER PRIMARY KEY,
-   		type             TEXT NOT NULL,
-   		trans_date       DATE NOT NULL,
-   		account_number   INTEGER NOT NULL,
+		type             TEXT NOT NULL,
+		currency		 TEXT NOT NULL,   
+   		trans_date       DATE NOT NULL DEFAULT (datetime('now', 'localtime')),
+   		account_number   TEXT NOT NULL,
    		customer_id      INTEGER NOT NULL,
   		description      TEXT NOT NULL,
 		amount           NUMERIC NOT NULL,
@@ -163,16 +164,16 @@ func CreateDB(location string) (*sql.DB, string, error) {
 
 	notificationTable := `
 	CREATE TABLE IF NOT EXISTS notifications(
-	    id               INTEGER PRIMARY KEY,
+		id               INTEGER PRIMARY KEY,
     	type             TEXT NOT NULL,
-    	notice_date      DATE NOT NULL,
-    	account_id       INTEGER NOT NULL,
+		notice_date      DATE NOT NULL DEFAULT (datetime('now', 'localtime')),
+		currency		 TEXT NOT NULL,
    		customer_id      INTEGER NOT NULL,
-    	transaction_id   INTEGER NOT NULL,
+		transaction_id   INTEGER NOT NULL,
     	message          TEXT NOT NULL,
     	amount           NUMERIC NOT NULL,
-   		status           TEXT NOT NULL,
-    	ack              BOOLEAN
+   		status           TEXT NOT NULL DEFAULT "POSTED",
+    	ack              BOOLEAN DEFAULT TRUE
 	);`
 
 	bankDB, err := sql.Open("sqlite3", location)

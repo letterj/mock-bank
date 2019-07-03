@@ -31,7 +31,7 @@ func (a *App) addDeposit(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, msg)
 	}
 
-	depData.RefID, err = depData.postDeposit(a.DB)
+	err = depData.postDeposit(a.DB)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return

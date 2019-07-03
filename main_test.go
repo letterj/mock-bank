@@ -14,11 +14,27 @@ import (
 	"testing"
 )
 
+type message struct {
+	Message string `json:"msg"`
+}
+
+func executeRequest(req *http.Request) *httptest.ResponseRecorder {
+	rr := httptest.NewRecorder()
+	a.Router.ServeHTTP(rr, req)
+
+	return rr
+}
+
+func checkResponseCode(t *testing.T, expected, actual int) {
+	if expected != actual {
+		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
+	}
+}
+
 var a App
 
 func TestMain(m *testing.M) {
 	val, err := LoadConfig("default")
-	fmt.Println(val.DBLocation)
 
 	a = App{}
 	a.Initialize(val)
@@ -33,8 +49,6 @@ func TestMain(m *testing.M) {
 		rows.Scan(&cnt)
 	}
 
-	fmt.Println(cnt)
-
 	code := m.Run()
 
 	//clearTables()
@@ -43,8 +57,6 @@ func TestMain(m *testing.M) {
 }
 
 func clearTables() {
-	// a.DB.Exec("DELETE FROM currencies")
-	a.DB.Exec("DELETE FROM accounts")
 	a.DB.Exec("DELETE FROM customers")
 	a.DB.Exec("DELETE FROM transactions")
 	a.DB.Exec("DELETE FROM notifications")
@@ -53,7 +65,7 @@ func clearTables() {
 func TestCurrencyTable(t *testing.T) {
 	numRows := 2
 
-	req, _ := http.NewRequest("GET", "/api/v1/currencies", nil)
+	req, _ := http.NewRequest("GET", "/api/v1/currency", nil)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -71,7 +83,7 @@ func TestAccountTable(t *testing.T) {
 	// clearTables()
 	numRows := 2
 
-	req, _ := http.NewRequest("GET", "/api/v1/accounts", nil)
+	req, _ := http.NewRequest("GET", "/api/v1/account", nil)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -89,7 +101,7 @@ func TestCustomerTable(t *testing.T) {
 	clearTables()
 	numRows := 0
 
-	req, _ := http.NewRequest("GET", "/api/v1/customers", nil)
+	req, _ := http.NewRequest("GET", "/api/v1/customer", nil)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -107,7 +119,7 @@ func TestTransactionTable(t *testing.T) {
 	clearTables()
 	numRows := 0
 
-	req, _ := http.NewRequest("GET", "/api/v1/transactions", nil)
+	req, _ := http.NewRequest("GET", "/api/v1/transaction", nil)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -125,7 +137,7 @@ func TestNotificationTable(t *testing.T) {
 	clearTables()
 	numRows := 0
 
-	req, _ := http.NewRequest("GET", "/api/vi/notifications", nil)
+	req, _ := http.NewRequest("GET", "/api/v1/notification", nil)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -144,7 +156,7 @@ func TestSpecificAccount(t *testing.T) {
 	numRows := 0
 	aNumber := "12345678-091"
 
-	url := fmt.Sprintf("/api/v1/accounts/%s", aNumber)
+	url := fmt.Sprintf("/api/v1/account/%s", aNumber)
 	req, _ := http.NewRequest("GET", url, nil)
 	response := executeRequest(req)
 
@@ -164,7 +176,7 @@ func TestSpecificCustomer(t *testing.T) {
 	numRows := 0
 	anLei := "01-23456789"
 
-	url := fmt.Sprintf("/api/v1/customers/%s", anLei)
+	url := fmt.Sprintf("/api/v1/customer/%s", anLei)
 	req, _ := http.NewRequest("GET", url, nil)
 	response := executeRequest(req)
 
@@ -184,7 +196,7 @@ func TestSpecificTransaction(t *testing.T) {
 	numRows := 0
 	transID := 1
 
-	url := fmt.Sprintf("/api/v1/transactions/%d", transID)
+	url := fmt.Sprintf("/api/v1/transaction/%d", transID)
 	req, _ := http.NewRequest("GET", url, nil)
 	response := executeRequest(req)
 
@@ -204,7 +216,7 @@ func TestSpecificNotification(t *testing.T) {
 	numRows := 0
 	noticeID := 1
 
-	url := fmt.Sprintf("/api/v1/transactions/%d", noticeID)
+	url := fmt.Sprintf("/api/v1/transaction/%d", noticeID)
 	req, _ := http.NewRequest("GET", url, nil)
 	response := executeRequest(req)
 
@@ -258,6 +270,7 @@ func TestSendDeposit(t *testing.T) {
 	clearTables()
 	numRows := 1
 
+	// POST CUSTOMER
 	cdata := map[string]interface{}{
 		"lei":            "123456-00",
 		"name":           "Test Trading Co of America",
@@ -274,14 +287,16 @@ func TestSendDeposit(t *testing.T) {
 	cresponse := executeRequest(reqC)
 
 	checkResponseCode(t, http.StatusOK, cresponse.Code)
+
 	fmt.Println("Added Customer", cresponse.Code)
 
+	// POST DEPOSIT
 	data := map[string]interface{}{
 		"type":           "WIRE",
 		"name":           "Test Trading Co of America",
 		"quorum_account": "Ox111111",
 		"currency_code":  "USD",
-		"amount":         100.00,
+		"amount":         1111.00,
 	}
 
 	bytesRepresentation, err := json.Marshal(data)
@@ -293,16 +308,16 @@ func TestSendDeposit(t *testing.T) {
 	reqD.Header.Set("Content-Type", "application/json")
 	dresponse := executeRequest(reqD)
 
+	checkResponseCode(t, http.StatusOK, dresponse.Code)
+
 	rd := []deposit{}
 	rdbody, _ := ioutil.ReadAll(dresponse.Body)
 	json.Unmarshal(rdbody, &rd)
 
-	checkResponseCode(t, http.StatusOK, dresponse.Code)
-
 	req, _ := http.NewRequest("GET", "/api/v1/transaction", nil)
 	response := executeRequest(req)
 
-	checkResponseCode(t, http.StatusOK, response.Code)
+	// checkResponseCode(t, http.StatusOK, response.Code)
 
 	r := []transaction{}
 	body, _ := ioutil.ReadAll(response.Body)
@@ -310,18 +325,5 @@ func TestSendDeposit(t *testing.T) {
 
 	if len(r) != numRows {
 		t.Errorf("Expected %d transaction. Got %d", numRows, len(r))
-	}
-}
-
-func executeRequest(req *http.Request) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	a.Router.ServeHTTP(rr, req)
-
-	return rr
-}
-
-func checkResponseCode(t *testing.T, expected, actual int) {
-	if expected != actual {
-		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
 	}
 }

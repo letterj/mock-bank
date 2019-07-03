@@ -41,3 +41,42 @@ make build
 make all 
 ``` 
 
+## API Commands
+
+### Accounts
+List all accounts
+```:bash
+/api/v1/account
+```
+
+### Customers
+List all Customers
+```:bash
+GET     /api/v1/customer
+```
+Add a Customer
+```:bash
+POST    /api/v1/customer
+-h "Content-Type: application/json"
+-d {"lei": "123456-00", "name": "Test Customer 1", "quorum_account": "0x111111"}
+```
+
+### Transactions
+List all Transactions
+```:bash
+GET     /api/v1/transaction
+```
+
+### Notifications
+List all Notifications
+```:bash
+GET     /api/v1/notification
+```
+
+### Deposits
+Add a Deposit
+```:bash
+POST    /api/v1/deposit
+-h "Content-Type: application/json"
+-d {"type": "WIRE","name": "Test Customer 1", "quorum_account": "Ox111111", "currency_code": "USD", "amount": 1111.00}
+```	
