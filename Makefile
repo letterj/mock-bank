@@ -4,15 +4,16 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
-BINARY_NAME=fcfcmockbank
-BINARY_UNIX=$(BINARY_NAME)_unix
+BINARY_NAME=fc2-mock-bank
+BINARY_MACOS=$(BINARY_NAME).macos
+BINARY_LINUX=$(BINARY_NAME).linux
 FC2BANK=bank.db
 
 
 all: clean build
 
 build: 
-	$(GOBUILD) -o $(BINARY_NAME) -v
+	$(GOBUILD) -o $(BINARY_MACOS) -v
 
 test: 
 	mkdir -p $(DB_LOCATION)
@@ -20,13 +21,13 @@ test:
 		
 clean: 
 	$(GOCLEAN)
-	rm -f $(BINARY_NAME)
-	rm -f $(BINARY_UNIX)
-	rm -f $(FC2BAND)
+	rm -f $(BINARY_MACOS)
+	rm -f $(BINARY_LINUX)
+	rm -f $(FC2BANK)
 
 run:
-	$(GOBUILD) -o $(BINARY_NAME) -v ./...
-	./$(BINARY_NAME) default
+	$(GOBUILD) -o $(BINARY_MACOS) -v ./...
+	./$(BINARY_MACOS) default
 
 deps:
 	$(GOGET) github.com/mattn/go-sqlite3
@@ -34,7 +35,7 @@ deps:
 	$(GOGET) github.com/gorilla/handlers
 
 build-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_LINUX) -v
     
 docker-build:
-	docker run --rm -it -v "$(GOPATH)":/go -w $HOME/go/src/github.com/letterj/fcfcbank golang:latest go build -o "$(BINARY_UNIX)" -v
+	docker run --rm -it -v "$(GOPATH)":/go -w $HOME/go/src/github.com/9thGear/fc2-mock-bank golang:latest go build -o "$(BINARY_LINUX)" -v
