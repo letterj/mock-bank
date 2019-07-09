@@ -9,7 +9,7 @@ type notification struct {
 	ID         int       `json:"id"`
 	NoticeType string    `json:"type"`
 	NoticeDate time.Time `json:"notice_date"`
-	Currency   string    `json:"currnency"`
+	Currency   string    `json:"currency"`
 	CustomerID int       `json:"customer_id"`
 	TransID    int       `json:"transaction_id"`
 	Message    string    `json:"message"`

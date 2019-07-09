@@ -35,7 +35,7 @@ deps:
 	$(GOGET) github.com/gorilla/handlers
 
 build-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_LINUX) -v
+	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_LINUX) -v
     
 docker-build:
 	docker run --rm -it -v "$(GOPATH)":/go -w $HOME/go/src/github.com/9thGear/fc2-mock-bank golang:latest go build -o "$(BINARY_LINUX)" -v
