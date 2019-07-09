@@ -17,4 +17,5 @@
 # Do not commit database or executable to git
 bank.db
 fc2-mock-bank
+fc2-mock-bank.*
 

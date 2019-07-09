@@ -29,6 +29,7 @@ func (a *App) addDeposit(w http.ResponseWriter, r *http.Request) {
 	msg := validateDeposit(a.DB, depData)
 	if msg != "" {
 		respondWithError(w, http.StatusBadRequest, msg)
+		return
 	}
 
 	err = depData.postDeposit(a.DB)

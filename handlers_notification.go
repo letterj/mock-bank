@@ -39,3 +39,26 @@ func (a *App) getNotification(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, n)
 }
+
+func (a *App) updateNotification(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid Notification ID")
+		return
+	}
+
+	n := notification{ID: id}
+	if err := n.updateNotification(a.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			respondWithError(w, http.StatusNotFound, "Notification not found")
+		default:
+			respondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	n.Ack = true
+	respondWithJSON(w, http.StatusOK, n)
+}
