@@ -78,7 +78,7 @@ func (d *deposit) postDeposit(db *sql.DB) error {
 	t.AcctNumber = acct
 	t.CustomerID = cId
 	if d.Type == "WIRE" {
-		t.Description = "Depsit QAccount: " + d.QuorumAccount
+		t.Description = "Deposit QAccount: " + d.QuorumAccount
 	} else {
 		t.Description = "SWEEP INTEREST PAYMENT"
 	}

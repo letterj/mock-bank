@@ -62,12 +62,10 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/api/v1/notification/{id}", a.getNotification).Methods("GET")
 
 	a.Router.HandleFunc("/api/v1/customer", a.addCustomer).Methods("POST")
-
 	a.Router.HandleFunc("/api/v1/deposit", a.addDeposit).Methods("POST")
 
-	// Account
-	// a.Router.HandleFunc("/account", a.getAccounts).Methods("GET")
-	// a.Router.HandleFunc("/account/{number}", a.getAccount).Methods("GET")
+	a.Router.HandleFunc("/api/v1/notification/{id}", a.updateNotification).Methods("PUT")
+
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
@@ -173,7 +171,7 @@ func CreateDB(location string) (*sql.DB, string, error) {
     	message          TEXT NOT NULL,
     	amount           NUMERIC NOT NULL,
    		status           TEXT NOT NULL DEFAULT "POSTED",
-    	ack              BOOLEAN DEFAULT TRUE
+    	ack              BOOLEAN DEFAULT FALSE
 	);`
 
 	bankDB, err := sql.Open("sqlite3", location)

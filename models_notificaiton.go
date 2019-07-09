@@ -25,7 +25,7 @@ func getNotifications(db *sql.DB) ([]notification, error) {
 	sqlstmt := `
 	SELECT id, type, notice_date, currency, customer_id, 
 		transaction_id, message, amount, status, ack
-	FROM notifications`
+	FROM notifications WHERE ack = false`
 	rows, err := db.Query(sqlstmt)
 	if err != nil {
 		return nil, err
@@ -71,5 +71,20 @@ func (n *notification) createNotification(db *sql.DB) error {
 	sqlStmt.Exec(&n.NoticeType, &n.CustomerID, &n.TransID,
 		&n.Message, &n.Amount, &n.Currency)
 
+	return nil
+}
+
+func (n *notification) updateNotification(db *sql.DB) error {
+	updateNotice := `
+	UPDATE notifications
+	SET ack = true
+	WHERE id = ? AND ack = false`
+
+	sqlStmt, err := db.Prepare(updateNotice)
+	if err != nil {
+		return err
+	}
+
+	sqlStmt.Exec(&n.ID)
 	return nil
 }
