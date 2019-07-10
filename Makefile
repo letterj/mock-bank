@@ -16,7 +16,6 @@ build:
 	$(GOBUILD) -o $(BINARY_MACOS) -v
 
 test: 
-	mkdir -p $(DB_LOCATION)
 	$(GOTEST) -v ./...
 		
 clean: 
@@ -27,7 +26,7 @@ clean:
 
 run:
 	$(GOBUILD) -o $(BINARY_MACOS) -v ./...
-	./$(BINARY_MACOS) default
+	./$(BINARY_MACOS) 
 
 deps:
 	$(GOGET) github.com/mattn/go-sqlite3
@@ -35,7 +34,7 @@ deps:
 	$(GOGET) github.com/gorilla/handlers
 
 build-linux:
-	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_LINUX) -v
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_LINUX) -v
     
-docker-build:
-	docker run --rm -it -v "$(GOPATH)":/go -w $HOME/go/src/github.com/9thGear/fc2-mock-bank golang:latest go build -o "$(BINARY_LINUX)" -v
+# docker-build:
+	# docker run --rm -it -v "$(GOPATH)":/go -w $HOME/go/src/github.com/9thGear/fc2-mock-bank golang:latest go build -o "$(BINARY_LINUX" -v

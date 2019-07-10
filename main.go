@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -16,13 +17,35 @@ type Config struct {
 	Currencies []Currency `json:"currencies"`
 }
 
+const version = "v0.2-beta"
+
 func main() {
 
-	configFile := os.Args[1:]
+	var conf string
+	flag.StringVar(&conf, "c", "default", "(short-hand) configuration file containing setup information")
+	flag.StringVar(&conf, "config", "default", "configuration file containing setup information")
+	var v bool
+	flag.BoolVar(&v, "v", false, "(short-hand) application version")
+	flag.BoolVar(&v, "version", false, "application version")
+	flag.Parse()
 
-	fmt.Println(configFile)
+	flag.Usage = func() {
+		fmt.Printf("Usage of %s:\n", os.Args[0])
+		fmt.Printf("    fc2-mock-bank -c [<file name>|default] \n")
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
+	if v {
+		fmt.Printf("%s version %s\n\n", os.Args[0], version)
+		os.Exit(1)
+	}
+
+	log.Printf("Configuration File: %s", conf)
+
 	// Load Configuration
-	values, err := LoadConfig(configFile[0])
+	values, err := LoadConfig(conf)
 	if err != nil {
 		log.Fatalf("Problem loading configuration with Error: %v", err)
 	}
