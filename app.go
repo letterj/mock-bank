@@ -9,8 +9,10 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -25,6 +27,7 @@ type App struct {
 func (a *App) Initialize(v Config) {
 
 	// Create database if necessary
+	log.Printf("The location of the bank database '%s'\n", v.DBLocation)
 	var msg string
 	var err error
 	a.DB, msg, err = CreateDB(v.DBLocation)
@@ -44,8 +47,9 @@ func (a *App) Initialize(v Config) {
 
 // Run  Setup and Run the application itself
 func (a *App) Run(addr string) {
-	fmt.Println("Attempting to load of the FCFC Mock Bank API on port", addr[1:])
-	log.Fatal(http.ListenAndServe(addr, a.Router))
+	log.Println("Attempting to load of the FCFC Mock Bank API on port", addr[1:])
+	loggedRouter := handlers.LoggingHandler(os.Stdout, a.Router)
+	log.Fatal(http.ListenAndServe(addr, loggedRouter))
 }
 
 func (a *App) initializeRoutes() {
@@ -93,7 +97,7 @@ func LoadCurrencies(db *sql.DB, v Config) error {
 	VALUES (?, ?, ?, ?);`
 
 	for i := 0; i < len(v.Currencies); i++ {
-		fmt.Printf("This Custodial Bank supports the %s.\n", v.Currencies[i].CurrencyCode)
+		log.Printf("This Custodial Bank supports the %s.\n", v.Currencies[i].CurrencyCode)
 		act.AcctNumber = fmt.Sprintf("%08d", rand.Intn(100000000)) + "-0" + strconv.Itoa(i)
 		act.QuorumAccount = "0x"
 		act.CurrencyCode = v.Currencies[i].CurrencyCode

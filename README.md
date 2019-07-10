@@ -27,14 +27,23 @@ The file **config.json.sample** has the appropiate values.
 This will build the go application into an executable
 
 ```:bash
-cd <repo_directory>/fcfcmockbank 
+cd <repo_directory>/fc2-mock-bank 
 make build 
 ```
 
-## Run the api in dev mode
+## General Usage
 ```:bash
-./fcfcmockbank [default | config.json]
+$ ./fc2-mock-bank.macos -help
+Usage of ./fc2-mock-bank.macos:
+  -c string
+    	(short-hand) configuration file containing setup information (default "default")
+  -config string
+    	configuration file containing setup information (default "default")
+  -v	(short-hand) application version
+  -version
+    	application version
 ```
+
 
 ## QuickStart
 ```:bash
@@ -71,6 +80,10 @@ GET     /api/v1/transaction
 List all Notifications
 ```:bash
 GET     /api/v1/notification
+```
+Acknowledge a Notification and remove it from future GET Requests
+```:bash
+PUT     /api/vi/notification/{ID}
 ```
 
 ### Deposits
