@@ -14,10 +14,6 @@ import (
 	"testing"
 )
 
-type message struct {
-	Message string `json:"msg"`
-}
-
 func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 	rr := httptest.NewRecorder()
 	a.Router.ServeHTTP(rr, req)
@@ -60,6 +56,24 @@ func clearTables() {
 	a.DB.Exec("DELETE FROM customers")
 	a.DB.Exec("DELETE FROM transactions")
 	a.DB.Exec("DELETE FROM notifications")
+}
+
+func TestVersion(t *testing.T) {
+
+	req, _ := http.NewRequest("GET", "/api/v1/version", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	r := message{}
+	body, _ := ioutil.ReadAll(response.Body)
+	json.Unmarshal(body, &r)
+
+	fmt.Println("VERSION: ", r.Message)
+
+	if r.Message == "" {
+		t.Errorf("Expected %s currency(ies). Got %s", "Non-blank", r.Message)
+	}
 }
 
 func TestCurrencyTable(t *testing.T) {
@@ -158,6 +172,7 @@ func TestSpecificAccount(t *testing.T) {
 
 	url := fmt.Sprintf("/api/v1/account/%s", aNumber)
 	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Content-Type", `application/json`)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusNotFound, response.Code)
@@ -268,7 +283,6 @@ func TestAddCustomer(t *testing.T) {
 
 func TestSendDeposit(t *testing.T) {
 	clearTables()
-	numRows := 1
 
 	// POST CUSTOMER
 	cdata := map[string]interface{}{
@@ -287,8 +301,6 @@ func TestSendDeposit(t *testing.T) {
 	cresponse := executeRequest(reqC)
 
 	checkResponseCode(t, http.StatusOK, cresponse.Code)
-
-	fmt.Println("Added Customer", cresponse.Code)
 
 	// POST DEPOSIT
 	data := map[string]interface{}{
@@ -317,13 +329,137 @@ func TestSendDeposit(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/api/v1/transaction", nil)
 	response := executeRequest(req)
 
-	// checkResponseCode(t, http.StatusOK, response.Code)
+	checkResponseCode(t, http.StatusOK, response.Code)
 
 	r := []transaction{}
 	body, _ := ioutil.ReadAll(response.Body)
 	json.Unmarshal(body, &r)
 
+	if r[0].Amount != 1111.00 {
+		t.Errorf("Expected transaction amount %v. Got %v", 1111.00, r[0].AcctNumber)
+	}
+}
+
+func TestAllAccounts(t *testing.T) {
+	clearTables()
+	numRows := 2
+
+	url := fmt.Sprintf("/api/v1/account")
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Content-Type", `application/json`)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	r := []account{}
+	body, _ := ioutil.ReadAll(response.Body)
+	json.Unmarshal(body, &r)
+
 	if len(r) != numRows {
-		t.Errorf("Expected %d transaction. Got %d", numRows, len(r))
+		t.Errorf("Expected %d accounts. Got %d", numRows, len(r))
+	}
+}
+
+func TestSpecificAccounts(t *testing.T) {
+	clearTables()
+	lookupCurrency := "USD"
+
+	url := fmt.Sprintf("/api/v1/account/%s", lookupCurrency)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Content-Type", `application/json`)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var r account
+	body, _ := ioutil.ReadAll(response.Body)
+	json.Unmarshal(body, &r)
+
+	if r.CurrencyCode != lookupCurrency {
+		t.Errorf("Expected account %s. Got %s", lookupCurrency, r.CurrencyCode)
+	}
+}
+
+func TestSendWithdraw(t *testing.T) {
+	clearTables()
+
+	// POST CUSTOMER
+	cdata := map[string]interface{}{
+		"lei":            "123456-00",
+		"name":           "Customer Withdraw",
+		"quorum_account": "0x111111",
+	}
+
+	bytesRepresentation_cust, err := json.Marshal(cdata)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	reqC, _ := http.NewRequest("POST", "/api/v1/customer", bytes.NewBuffer(bytesRepresentation_cust))
+	reqC.Header.Set("Content-Type", "application/json")
+	cresponse := executeRequest(reqC)
+
+	checkResponseCode(t, http.StatusOK, cresponse.Code)
+
+	// POST DEPOSIT
+	pdata := map[string]interface{}{
+		"type":           "WIRE",
+		"name":           "Customer Withdraw",
+		"quorum_account": "Ox111111",
+		"currency_code":  "USD",
+		"amount":         100000.00,
+	}
+
+	pbytesRepresentation, err := json.Marshal(pdata)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	reqD, _ := http.NewRequest("POST", "/api/v1/deposit", bytes.NewBuffer(pbytesRepresentation))
+	reqD.Header.Set("Content-Type", "application/json")
+	dresponse := executeRequest(reqD)
+
+	checkResponseCode(t, http.StatusOK, dresponse.Code)
+
+	// ACCOUNT NUMBER
+	aurl := fmt.Sprintf("/api/v1/account/%s", "USD")
+	areq, _ := http.NewRequest("GET", aurl, nil)
+	areq.Header.Add("Content-Type", `application/json`)
+	aresponse := executeRequest(areq)
+
+	checkResponseCode(t, http.StatusOK, aresponse.Code)
+
+	var ra account
+	abody, _ := ioutil.ReadAll(aresponse.Body)
+	json.Unmarshal(abody, &ra)
+
+	// POST WITHDRAW
+	wdata := map[string]interface{}{
+		"lei":            "123456-00",
+		"account_number": ra.AcctNumber,
+		"bank_name":      "First State Bank",
+		"currency_code":  "USD",
+		"amount":         100.00,
+		"instructions":   "FOB 1234",
+		"notes":          "Test Note",
+	}
+
+	bytesRepresentation, err := json.Marshal(wdata)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	reqW, _ := http.NewRequest("POST", "/api/v1/withdraw", bytes.NewBuffer(bytesRepresentation))
+	reqD.Header.Set("Content-Type", "application/json")
+	wresponse := executeRequest(reqW)
+
+	checkResponseCode(t, http.StatusOK, wresponse.Code)
+
+	var wd withdraw
+	body, _ := ioutil.ReadAll(wresponse.Body)
+	json.Unmarshal(body, &wd)
+
+	if wd.RefID == 0 {
+		t.Errorf("Expected a reference id %v. Got %v", "Non-Blank", wd.RefID)
 	}
 }
