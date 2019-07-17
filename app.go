@@ -54,20 +54,25 @@ func (a *App) Run(addr string) {
 
 func (a *App) initializeRoutes() {
 	// Lists
+	a.Router.HandleFunc("/api/v1/version", a.version).Methods("GET")
 	a.Router.HandleFunc("/api/v1/currency", a.getCurrencies).Methods("GET")
 	a.Router.HandleFunc("/api/v1/account", a.getAccounts).Methods("GET")
 	a.Router.HandleFunc("/api/v1/customer", a.getCustomers).Methods("GET")
 	a.Router.HandleFunc("/api/v1/transaction", a.getTransactions).Methods("GET")
 	a.Router.HandleFunc("/api/v1/notification", a.getNotifications).Methods("GET")
+
 	// Specific Items
-	a.Router.HandleFunc("/api/v1/account/{id}", a.getAccount).Methods("GET")
+	a.Router.HandleFunc("/api/v1/account/{currency}", a.getAccount).Methods("GET")
 	a.Router.HandleFunc("/api/v1/customer/{lei}", a.getCustomer).Methods("GET")
 	a.Router.HandleFunc("/api/v1/transaction/{id}", a.getTransaction).Methods("GET")
 	a.Router.HandleFunc("/api/v1/notification/{id}", a.getNotification).Methods("GET")
 
+	// Creates
 	a.Router.HandleFunc("/api/v1/customer", a.addCustomer).Methods("POST")
 	a.Router.HandleFunc("/api/v1/deposit", a.addDeposit).Methods("POST")
-
+	a.Router.HandleFunc("/api/v1/withdraw", a.addWithdraw).Methods("POST")
+	// Updates
+	a.Router.HandleFunc("/api/v1/account/{acctNumber}", a.updateAccount).Methods("PUT")
 	a.Router.HandleFunc("/api/v1/notification/{id}", a.updateNotification).Methods("PUT")
 
 }
@@ -98,8 +103,8 @@ func LoadCurrencies(db *sql.DB, v Config) error {
 
 	for i := 0; i < len(v.Currencies); i++ {
 		log.Printf("This Custodial Bank supports the %s.\n", v.Currencies[i].CurrencyCode)
-		act.AcctNumber = fmt.Sprintf("%08d", rand.Intn(100000000)) + "-0" + strconv.Itoa(i)
-		act.QuorumAccount = "0x"
+		act.AcctNumber = fmt.Sprintf("%12d", rand.Intn(1000000000000)) + "-0" + strconv.Itoa(i)
+		act.QAccount = "0x1111111111111111111111111111111" + strconv.Itoa(i)
 		act.CurrencyCode = v.Currencies[i].CurrencyCode
 		act.Balance = 0
 
@@ -116,7 +121,7 @@ func LoadCurrencies(db *sql.DB, v Config) error {
 		if err != nil {
 			return err
 		}
-		sqlStmt.Exec(act.AcctNumber, act.QuorumAccount, act.CurrencyCode,
+		sqlStmt.Exec(act.AcctNumber, act.QAccount, act.CurrencyCode,
 			act.Balance)
 
 	}
@@ -140,7 +145,9 @@ func CreateDB(location string) (*sql.DB, string, error) {
    		id       INTEGER PRIMARY KEY,
    		lei      TEXT NOT NULL,
    		name     TEXT NOT NULL,
-   		qaccount TEXT NOT NULL 
+		qaccount TEXT NOT NULL,
+		UNIQUE (lei),
+		UNIQUE (qaccount)    
  	);`
 
 	accountTable := `
@@ -148,7 +155,9 @@ func CreateDB(location string) (*sql.DB, string, error) {
    		acct_number      TEXT PRIMARY KEY,
    		qaccount         TEXT NOT NULL,
    		currency_code    TEXT NOT NULL,
-   		balance          NUMERIC NOT NULL 
+		balance          NUMERIC NOT NULL,
+		UNIQUE(qaccount),
+		UNIQUE(currency_code)   
  	);`
 
 	transactionTable := `
@@ -157,10 +166,14 @@ func CreateDB(location string) (*sql.DB, string, error) {
 		type             TEXT NOT NULL,
 		currency		 TEXT NOT NULL,   
    		trans_date       DATE NOT NULL DEFAULT (datetime('now', 'localtime')),
-   		account_number   TEXT NOT NULL,
+		account_number   TEXT NOT NULL,
+		quorum_account   TEXT,  
    		customer_id      INTEGER NOT NULL,
   		description      TEXT NOT NULL,
 		amount           NUMERIC NOT NULL,
+		start_date       TEXT,
+		end_date         TEXT,
+		rate             NUMBERIC,
 		status           NUMERIC NOT NULL DEFAULT "PENDING"
  	);`
 
@@ -172,8 +185,12 @@ func CreateDB(location string) (*sql.DB, string, error) {
 		currency		 TEXT NOT NULL,
    		customer_id      INTEGER NOT NULL,
 		transaction_id   INTEGER NOT NULL,
+		quorum_account   TEXT,
     	message          TEXT NOT NULL,
-    	amount           NUMERIC NOT NULL,
+		amount           NUMERIC NOT NULL,
+		start_date       TEXT,
+		end_date 		 TEXT, 
+		rate             NUMBERIC,
    		status           TEXT NOT NULL DEFAULT "POSTED",
     	ack              BOOLEAN DEFAULT FALSE
 	);`

@@ -6,16 +6,36 @@ Title
 
 New:
 * general request logging
-* ability to determine what version of code is running
+* Added GET /version to return the current code version
 * command line "help"
 * using golang package "flags" to work with command line
 * release_notes.md
+* Added fields to the notification and transaction tables
+  * Quorum Account number
+  * Start Date
+  * End Date
+  * Rate
+* Added PUT on accounts to be able to update Quorum Account
+* Added unique constraints on table columns
+  * accounts.qaccount
+  * accunts.currency_code
+  * customer.qaccount
+  * customer.lei
 
 Modifications:
 * converted fmt.Print statements to logs
 * command line usage presentation
-* updated README.md file
-* command line default 
+* updated README.md file to include result examples
+* command line default
+* broke up deposit and withdraw validation into sub functions 
+* default quorum accounts created for accounts were realistic values
+* default fc2 account number were realistic
+* objects returns or POSTs and PUTs had appropriate values
+  * Notification
+  * Account
+  * Customer
+* cleaned up golang tests and verified they all pass
+
 
 Bugs:
 

@@ -54,6 +54,14 @@ func (c *customer) createCustomer(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+
+	rows, _ := db.Query("SELECT last_insert_rowid()")
+	var custID int
+	for rows.Next() {
+		rows.Scan(&custID)
+	}
+
+	c.ID = custID
 	return nil
 }
 
