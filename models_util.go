@@ -116,6 +116,7 @@ func (d *deposit) postDeposit(db *sql.DB) error {
 	n.StartDate = d.StartDate
 	n.EndDate = d.EndDate
 	n.Rate = d.Rate
+	n.Ack = false
 
 	err = n.createNotification(db)
 	if err != nil {
@@ -166,6 +167,7 @@ func (w *withdraw) postWithdraw(db *sql.DB) error {
 	n.Message = t.Description
 	n.Amount = t.Amount
 	n.Currency = t.Currency
+	n.Ack = true
 
 	err = n.createNotification(db)
 	if err != nil {
