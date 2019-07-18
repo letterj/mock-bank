@@ -68,8 +68,8 @@ func (n *notification) createNotification(db *sql.DB) error {
 	insertNotice := `
 	INSERT INTO notifications (type, customer_id,
 		transaction_id, message, amount, currency, quorum_account,
-		start_date, end_date, rate)
-		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		start_date, end_date, rate, ack)
+		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	sqlStmt, err := db.Prepare(insertNotice)
 	if err != nil {
@@ -78,7 +78,7 @@ func (n *notification) createNotification(db *sql.DB) error {
 
 	sqlStmt.Exec(&n.NoticeType, &n.CustomerID, &n.TransID,
 		&n.Message, &n.Amount, &n.Currency, &n.QAccount,
-		&n.StartDate, &n.EndDate, &n.Rate)
+		&n.StartDate, &n.EndDate, &n.Rate, &n.Ack)
 
 	return nil
 }

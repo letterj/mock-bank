@@ -1,8 +1,16 @@
 
 # Release Notes and WIP
 
+## v0.3.1-beta
+Full Deposit and Withdraw 
+
+Bug:
+* Notification ack was not being set properly
+  * for Withdrawls  ack = true
+  * for Deposits    ack = false
+
 ## v0.3-beta
-Title
+Full Deposit and Withdraw
 
 New:
 * general request logging
