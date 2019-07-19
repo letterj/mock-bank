@@ -1,6 +1,9 @@
 # MacOS
 .DS_Store
 
+# certificates
+*.pem
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

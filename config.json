@@ -1,6 +1,7 @@
 {
     "database_location": "/tmp/fcfcbank/bank.db",
     "port": 8080,
+    "tls": false,
     "currencies": [
         {
             "currency":  "EUR",

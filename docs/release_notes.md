@@ -1,6 +1,16 @@
 
 # Release Notes and WIP
 
+## v0.4-beta
+Full Deposit and Withdraw with TLS support
+
+New:
+* Added TLS support 
+
+Modifications:
+* broke out code into separate files for cleaner layout
+
+
 ## v0.3.1-beta
 Full Deposit and Withdraw 
 
