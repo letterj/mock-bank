@@ -463,3 +463,177 @@ func TestSendWithdraw(t *testing.T) {
 		t.Errorf("Expected a reference id %v. Got %v", "Non-Blank", wd.RefID)
 	}
 }
+
+func TestGetNotice(t *testing.T) {
+	clearTables()
+
+	// POST CUSTOMER
+	cdata := map[string]interface{}{
+		"lei":            "123456-00",
+		"name":           "Test Trading Co of America",
+		"quorum_account": "0x111111",
+	}
+
+	bytesRepresentation_cust, err := json.Marshal(cdata)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	reqC, _ := http.NewRequest("POST", "/api/v1/customer", bytes.NewBuffer(bytesRepresentation_cust))
+	reqC.Header.Set("Content-Type", "application/json")
+	cresponse := executeRequest(reqC)
+
+	checkResponseCode(t, http.StatusOK, cresponse.Code)
+
+	// POST DEPOSIT
+	data := map[string]interface{}{
+		"type":           "WIRE",
+		"name":           "Test Trading Co of America",
+		"quorum_account": "Ox111111",
+		"currency_code":  "USD",
+		"amount":         1111.00,
+	}
+
+	bytesRepresentation, err := json.Marshal(data)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	reqD, _ := http.NewRequest("POST", "/api/v1/deposit", bytes.NewBuffer(bytesRepresentation))
+	reqD.Header.Set("Content-Type", "application/json")
+	dresponse := executeRequest(reqD)
+
+	checkResponseCode(t, http.StatusOK, dresponse.Code)
+
+	rd := []deposit{}
+	rdbody, _ := ioutil.ReadAll(dresponse.Body)
+	json.Unmarshal(rdbody, &rd)
+
+	req, _ := http.NewRequest("GET", "/api/v1/transaction", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	r := []transaction{}
+	body, _ := ioutil.ReadAll(response.Body)
+	json.Unmarshal(body, &r)
+
+	if r[0].Amount != 1111.00 {
+		t.Errorf("Expected transaction amount %v. Got %v", 1111.00, r[0].AcctNumber)
+	}
+
+	expectedID := 1
+	// NOTIFICATION
+	nreq, _ := http.NewRequest("GET", "/api/v1/notification", nil)
+	nresponse := executeRequest(nreq)
+
+	checkResponseCode(t, http.StatusOK, nresponse.Code)
+
+	nr := []notification{}
+	nbody, _ := ioutil.ReadAll(nresponse.Body)
+	json.Unmarshal(nbody, &nr)
+
+	noteID := 0
+	for _, notice := range nr {
+		noteID = notice.ID
+	}
+	if noteID != expectedID {
+		t.Errorf("Expected Notification number %d. Got %d", expectedID, noteID)
+	}
+
+}
+
+func TestUpdateNotice(t *testing.T) {
+	clearTables()
+
+	// POST CUSTOMER
+	cdata := map[string]interface{}{
+		"lei":            "123456-00",
+		"name":           "Test Trading Co of America",
+		"quorum_account": "0x111111",
+	}
+
+	bytesRepresentation_cust, err := json.Marshal(cdata)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	reqC, _ := http.NewRequest("POST", "/api/v1/customer", bytes.NewBuffer(bytesRepresentation_cust))
+	reqC.Header.Set("Content-Type", "application/json")
+	cresponse := executeRequest(reqC)
+
+	checkResponseCode(t, http.StatusOK, cresponse.Code)
+
+	// POST DEPOSIT
+	data := map[string]interface{}{
+		"type":           "WIRE",
+		"name":           "Test Trading Co of America",
+		"quorum_account": "Ox111111",
+		"currency_code":  "USD",
+		"amount":         1111.00,
+	}
+
+	bytesRepresentation, err := json.Marshal(data)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	reqD, _ := http.NewRequest("POST", "/api/v1/deposit", bytes.NewBuffer(bytesRepresentation))
+	reqD.Header.Set("Content-Type", "application/json")
+	dresponse := executeRequest(reqD)
+
+	checkResponseCode(t, http.StatusOK, dresponse.Code)
+
+	rd := []deposit{}
+	rdbody, _ := ioutil.ReadAll(dresponse.Body)
+	json.Unmarshal(rdbody, &rd)
+
+	req, _ := http.NewRequest("GET", "/api/v1/transaction", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	r := []transaction{}
+	body, _ := ioutil.ReadAll(response.Body)
+	json.Unmarshal(body, &r)
+
+	if r[0].Amount != 1111.00 {
+		t.Errorf("Expected transaction amount %v. Got %v", 1111.00, r[0].AcctNumber)
+	}
+
+	expectedID := 1
+	// NOTIFICATION
+	nreq, _ := http.NewRequest("GET", "/api/v1/notification", nil)
+	nresponse := executeRequest(nreq)
+
+	checkResponseCode(t, http.StatusOK, nresponse.Code)
+
+	nr := []notification{}
+	nbody, _ := ioutil.ReadAll(nresponse.Body)
+	json.Unmarshal(nbody, &nr)
+
+	noteID := 0
+	for _, notice := range nr {
+		noteID = notice.ID
+	}
+	if noteID != expectedID {
+		t.Errorf("Expected Notification number %d. Got %d", expectedID, noteID)
+	}
+
+	gnID := "1"
+	// PUT NOTIFICATION
+	pnurl := fmt.Sprintf("/api/v1/notification/%s", gnID)
+	pnreq, _ := http.NewRequest("PUT", pnurl, nil)
+	pnresponse := executeRequest(pnreq)
+
+	checkResponseCode(t, http.StatusOK, pnresponse.Code)
+
+	pnr := notification{}
+	pnbody, _ := ioutil.ReadAll(pnresponse.Body)
+	json.Unmarshal(pnbody, &pnr)
+
+	if !pnr.Ack {
+		t.Errorf("Expected Notification to be FALSE for Notice %d", pnr.ID)
+	}
+
+}
