@@ -1,6 +1,17 @@
 
 # Release Notes and WIP
 
+
+## v0.4.1-beta
+Full Deposit and Withdraw with TLS support
+
+Modificaiton:
+* Added new test for Notification PUTS
+
+Bugs:
+* Fixed: Notification PUT Broke due to field addition
+
+
 ## v0.4-beta
 Full Deposit and Withdraw with TLS support
 

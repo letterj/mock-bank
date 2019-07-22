@@ -98,13 +98,13 @@ func (n *notification) updateNotification(db *sql.DB) error {
 
 	lookupNotice := `
 	SELECT id, type, notice_date, currency, customer_id, transaction_id,
-	message, amount, quorum_account, start_date, end_date, rate, status, ack
+	message, amount, quorum_account, start_date, end_date, rate, status
 	FROM notifications WHERE id=$1`
 
 	err = db.QueryRow(lookupNotice,
-		n.ID).Scan(&n.NoticeDate, &n.NoticeType, &n.Currency,
-		&n.CustomerID, &n.TransID, &n.Message, &n.Amount,
-		&n.QAccount, &n.StartDate, &n.EndDate,
+		n.ID).Scan(&n.ID, &n.NoticeType, &n.NoticeDate,
+		&n.Currency, &n.CustomerID, &n.TransID, &n.Message,
+		&n.Amount, &n.QAccount, &n.StartDate, &n.EndDate,
 		&n.Rate, &n.Status)
 
 	if err != nil {
