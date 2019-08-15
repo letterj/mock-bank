@@ -18,6 +18,7 @@
 *.out
 
 # Do not commit database or executable to git
+/data/*
 bank.db
 fc2-mock-bank
 fc2-mock-bank.*

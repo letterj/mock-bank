@@ -45,6 +45,7 @@ func (a *App) Initialize(v Config) {
 // Run  Setup and Run the application itself
 func (a *App) Run(addr string, tls bool) {
 	loggedRouter := handlers.LoggingHandler(os.Stdout, a.Router)
+	log.Println("Loaded of the FCFC Mock Bank API on port", addr[1:])
 
 	if tls {
 		log.Println("TLS set to TRUE")
@@ -54,7 +55,6 @@ func (a *App) Run(addr string, tls bool) {
 		log.Fatal(http.ListenAndServe(addr, loggedRouter))
 	}
 
-	log.Println("Loaded of the FCFC Mock Bank API on port", addr[1:])
 }
 
 func (a *App) initializeRoutes() {
