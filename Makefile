@@ -23,6 +23,7 @@ clean:
 	rm -f $(BINARY_MACOS)
 	rm -f $(BINARY_LINUX)
 	rm -f $(FC2BANK)
+	rm -f data/$(FC2BANK)
 
 run:
 	$(GOBUILD) -o $(BINARY_MACOS) -v ./...

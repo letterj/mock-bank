@@ -18,7 +18,7 @@ func LoadConfig(fileName string) (Config, error) {
 	if fileName == "" || fileName == "default" {
 
 		c.Port = 8080
-		c.DBLocation = "./bank.db"
+		c.DBLocation = "./data/bank.db"
 		c.TLS = false
 
 		m.CurrencyCode = "USD"
