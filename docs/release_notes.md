@@ -1,6 +1,16 @@
 
 # Release Notes and WIP
 
+## v0.4.2-beta
+Move database to "data" directory
+
+Modificaiton:
+* Moved database into a `data` directory to make using
+  Docker easier.
+
+Bugs:
+* Fixed: Lot statement diplaying  port assignment moved
+
 
 ## v0.4.1-beta
 Full Deposit and Withdraw with TLS support
