@@ -17,7 +17,7 @@ type Config struct {
 	Currencies []Currency `json:"currencies"`
 }
 
-const version = "v0.4-beta"
+const version = "v0.4.2-beta"
 
 func main() {
 
