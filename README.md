@@ -331,3 +331,24 @@ PUT     /api/vi/notification/{ID}  [2]
 }
 ```
 
+## Create an AMI for AWS
+
+### OS needed
+Use Ubuntu 18.04 
+
+### Install Software Packages
+```:bash
+sudo apt-get update
+
+sudo apt-get upgrade -y
+
+sudo apt-get install sqlite3
+```
+
+### Load Mock Bank Software
+```
+wget 
+```
+
+
+
